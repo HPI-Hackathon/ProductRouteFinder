@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -14,34 +14,62 @@
     <!-- Bootstrap core CSS -->
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
-    <style type="text/css">    
+    <style type="text/css">
     html, body, #map-canvas {
       width: 100%;
       height: 100%;
       margin: 0;
       padding: 0;
     }
-    
+
     body {
       padding-top: 50px;
     }
-    
+
     .container-fluid, .row, .col-md-8 {
       height: 100%;
     }
     </style>
-    
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBlM4TmmBINwcow1cQtcO359u8jX3qTFSo"></script>
     <script type="text/javascript">
+    var map;
+
     function initialize() {
+      var berlin = new google.maps.LatLng(52.5166667, 13.4);
       var mapOptions = {
-        center: { lat: -34.397, lng: 150.644},
-        zoom: 8
+        center: berlin,
+        zoom: 10
       };
-      var map = new google.maps.Map(document.getElementById('map-canvas'),
+      map = new google.maps.Map(document.getElementById('map-canvas'),
           mapOptions);
     }
     google.maps.event.addDomListener(window, 'load', initialize);
+    //var that = this;
+
+    function dirSearch (src, dst, mode) {
+      var directionsDisplay = new google.maps.DirectionsRenderer({
+        map: map,
+        panel: document.getElementById('directions'),
+        draggable: true
+      });
+
+      var ds = new google.maps.DirectionsService();
+      ds.route({
+        origin : 'Potsdam',
+        destination : 'Berlin',
+        region : 'at',
+        travelMode: google.maps.TravelMode.DRIVING
+      }, function(result, status) {
+        if(status == google.maps.DirectionsStatus.OK) {
+          directionsDisplay.setDirections(result);
+        }
+      });
+    }
+
+    dirSearch('Berlin', 'Potsdam', 'bicycle');
     </script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -82,6 +110,7 @@
         </div>
         <div class="col-md-8">
           <div id="map-canvas"></div>
+          <div id="directions"></div>
         </div>
       </div>
     </div><!-- /.container -->
@@ -89,7 +118,7 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
     <script src="bootstrap/js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="bootstrap/js/ie10-viewport-bug-workaround.js"></script>
