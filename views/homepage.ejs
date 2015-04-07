@@ -94,7 +94,9 @@ function calcRoute(start, end, radius, pointsCallback) {
   };
   directionsService.route(request, function(response, status) {
     if (status == google.maps.DirectionsStatus.OK) {
-      //directionsDisplay.setDirections(response);
+      // route auf der map setzen falls vorhanden
+      if (start != end)
+        directionsDisplay.setDirections(response);
       
       var points = response.routes[0].overview_path;
       var pointsSearch = [];
@@ -113,6 +115,8 @@ function calcRoute(start, end, radius, pointsCallback) {
         // Add the circle for every point on the map
         pointCircle = new google.maps.Circle(circleOptions);
         oldStuff.push(pointCircle);
+        // ansonsten wenn es nur einen punkt gibt einfach den circle anzeigen
+        map.fitBounds(pointCircle.getBounds());
         //console.log(point);
         pointsSearch.push({
           "lat": point.lat(),
