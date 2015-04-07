@@ -1,10 +1,4 @@
 <!DOCTYPE html> 
-<html>
-  <head>
-
-  </head>
-  <body>
-=======
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -20,33 +14,35 @@
     <!-- Bootstrap core CSS -->
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
-    <style type="text/css">
-      html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
-    </style>
-    <script type="text/javascript"
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBlM4TmmBINwcow1cQtcO359u8jX3qTFSo">
-    </script>
-    <script type="text/javascript">
-      function initialize() {
-        var mapOptions = {
-          center: { lat: -34.397, lng: 150.644},
-          zoom: 8
-        };
-        var map = new google.maps.Map(document.getElementById('map-canvas'),
-            mapOptions);
-      }
-      google.maps.event.addDomListener(window, 'load', initialize);
-    </script>
-
-    <style type="text/css">
+    <style type="text/css">    
+    html, body, #map-canvas {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    
     body {
       padding-top: 50px;
     }
-    .starter-template {
-      padding: 40px 15px;
-      text-align: center;
+    
+    .container-fluid, .row, .col-md-8 {
+      height: 100%;
     }
     </style>
+    
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBlM4TmmBINwcow1cQtcO359u8jX3qTFSo"></script>
+    <script type="text/javascript">
+    function initialize() {
+      var mapOptions = {
+        center: { lat: -34.397, lng: 150.644},
+        zoom: 8
+      };
+      var map = new google.maps.Map(document.getElementById('map-canvas'),
+          mapOptions);
+    }
+    google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -79,11 +75,16 @@
       </div>
     </nav>
 
-    <div class="container">
-      <h1>Your mom.</h1>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-4">
+          <h2>Hello</h2>
+        </div>
+        <div class="col-md-8">
+          <div id="map-canvas"></div>
+        </div>
+      </div>
     </div><!-- /.container -->
-
-    <div id="map-canvas"></div>
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
@@ -92,8 +93,5 @@
     <script src="bootstrap/js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="bootstrap/js/ie10-viewport-bug-workaround.js"></script>
-
-    <script src="questions.js"></script>
->>>>>>> 466015962b84b17ea2c18b48d2205d7b7d8fb972
   </body>
 </html>
