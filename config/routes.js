@@ -32,6 +32,8 @@ module.exports.routes = {
   *                                                                          *
   ***************************************************************************/
 
+  'GET /ebay/test': 'EbayAPIController.test',
+
   '/': {
     view: 'homepage'
   }
