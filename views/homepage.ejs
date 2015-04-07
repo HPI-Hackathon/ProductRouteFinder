@@ -51,7 +51,11 @@ function initialize() {
   });
 }
 
-function calcRoute(start, end, radius, pointsCallback) {
+function calcRoute(start, end, radius, pointsCallback) {  
+  // dirty hack
+  if (end == "")
+    end = start;
+  
   var request = {
     origin: start,
     destination: end,
