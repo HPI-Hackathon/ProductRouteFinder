@@ -1,0 +1,20 @@
+{
+  "name": "your-moms-map",
+  "version": "0.0.0",
+  "authors": [
+    "m0r13 <moritz.hilscher@gmail.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.4",
+    "jquery": "~2.1.3"
+  }
+}
