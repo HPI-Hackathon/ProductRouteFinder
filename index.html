@@ -61,6 +61,24 @@
 	  directionsService.route(request, function(response, status) {
 	    if (status == google.maps.DirectionsStatus.OK) {
 	      directionsDisplay.setDirections(response);
+	   //    Construct the circle for each value in citymap.
+		  // Note: We scale the area of the circle based on the population.
+	  	   var points = response.routes[0].overview_path
+		  for (var i in points) {
+		  	var point = points[i];
+		    var circleOptions = {
+		      strokeColor: '#FF0000',
+		      strokeOpacity: 0.8,
+		      strokeWeight: 2,
+		      fillColor: '#FF0000',
+		      fillOpacity: 0.35,
+		      map: map,
+		      center: point,
+		      radius: Math.sqrt(50) * 100
+		    };
+		    // Add the circle for every point on the map
+		    pointCircle = new google.maps.Circle(circleOptions);
+		  }
 	    }
 	  });
 	}
