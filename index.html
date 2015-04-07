@@ -85,7 +85,7 @@
 		      fillOpacity: 0.35,
 		      map: map,
 		      center: point,
-		      radius: Math.sqrt(50) * 100
+		      radius: Math.sqrt(document.getElementById('radius').value) * 100
 		    };
 		    // Add the circle for every point on the map
 		    pointCircle = new google.maps.Circle(circleOptions);
@@ -144,7 +144,9 @@
     <b>Start: </b>
     <input id="start" onchange="calcRoute();">
     <b>End: </b>
-    <input id="end" onchange="calcRoute();">  
+    <input id="end" onchange="calcRoute();"> 
+    <b>Umkreis</b> 
+    <input id="radius" onchange="calcRoute();">
 
     </div>
     <div id="map-canvas"></div>
