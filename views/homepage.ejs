@@ -33,6 +33,17 @@ function initialize() {
   
   $("#button-search").click(function() {
     calcRoute($("#input-from").val(), $("#input-to").val());
+    var data = {
+      "query" : $("#input-query").val(),
+      "points" : [{lat: 0, lng: 0, radius: 10}],
+    }
+    io.socket.post("/ebay/ads/", data, function(data, jwres) {
+        if (jwres.statusCode !== 200) {
+          alert("WTF?!");
+          return;
+        }
+        alert(data);
+    });
     return false;
   });
 }
@@ -72,7 +83,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
       </ul>-->
       <form class="navbar-form navbar-left" role="search" action="#">
         <div class="form-group">
-          <input type="text" class="form-control" placeholder="Suchbegriff">
+          <input id="input-query" type="text" class="form-control" placeholder="Suchbegriff">
           <select class="form-control">
             <option>Kategorie</option>
           </select>

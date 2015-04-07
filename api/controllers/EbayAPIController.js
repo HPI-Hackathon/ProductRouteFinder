@@ -19,5 +19,30 @@ module.exports = {
       res.send(body);
     });
   },
+  
+  ads: function(req, res) {
+    var query = req.body.query;
+    for (i in req.body.points) {
+      var point = req.body.points[i];
+      
+      var url = "https://api.ebay-kleinanzeigen.de/api/ads.json?";
+      url += "q=" + query;
+      url += "&latitude=" + point.lat;
+      url += "&longitude=" + point.lng;
+      url += "&distance=" + point.radius + "&distanceUnit=KM";
+      res.send(url + "\n");
+      
+      /*
+      request({
+        url: url,
+        auth: {
+          username: "hpi_hackathon",
+          pass: "dsk38a1l",
+        },
+      }, function(error, response, body) {
+        res.send(body);
+      });
+      */
+    }
+  }
 };
-
