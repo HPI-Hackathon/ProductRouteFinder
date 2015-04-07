@@ -23,30 +23,64 @@ module.exports = {
   ads: function(req, res) {
     var query = req.body.query;
     
-    request({
-      url: "https://api.ebay-kleinanzeigen.de/api/ads.json?zipcode=17033",
-      auth: {
-        username: "hpi_hackathon",
-        pass: "dsk38a1l",
-      },
-    }, function(error, response, body) {
+    // api seems to be slooooow
+    var maxPages = 10;
+    
+    var markersIDs = [];
+    var markers = [];
+    var handler = function(error, response, body) {
       var data = JSON.parse(body);
       var ads = data["{http://www.ebayclassifiedsgroup.com/schema/ad/v1}ads"].value.ad;
       
-      var markers = [];
       for (var i in ads) {
         var ad = ads[i];
+        if (markersIDs.indexOf(ad.id) != -1)
+          continue;
+        markersIDs.push(marker);
         
         var marker = {
+          id: ad.id,
           title: ad.title.value,
+          description: ad.description.value,
           latLng: [ad["ad-address"].latitude.value, ad["ad-address"].longitude.value],
         };
         markers.push(marker);
         //console.log(marker);
       }
       
-      res.send({"markers" : markers});
-    });
+      var paging = data["{http://www.ebayclassifiedsgroup.com/schema/ad/v1}ads"].value.paging;
+      var next = "";
+      for (var i in paging.link) {
+        if (paging.link[i].rel == "next") {
+          next = paging.link[i].href;
+          break;
+        }
+      }
+      
+      maxPages--;
+      if (maxPages <= 0 || next == "") {
+        res.send({"markers" : markers});
+      } else {
+        console.log("Loading " + next);
+        request({
+          url: next,
+          auth: {
+            username: "hpi_hackathon",
+            pass: "dsk38a1l",
+          },
+        }, handler);
+      }
+    };
+    
+    var url = "https://api.ebay-kleinanzeigen.de/api/ads.json?locationId=3331&q=" + query;
+    console.log("Loading " + url);
+    request({
+      url: url,
+      auth: {
+        username: "hpi_hackathon",
+        pass: "dsk38a1l",
+      },
+    }, handler);
     
     /*
     for (i in req.body.points) {

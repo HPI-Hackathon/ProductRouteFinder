@@ -70,7 +70,9 @@ function initialize() {
               map: map,
               title: marker.title
             });
-            bindInfoWindow(gMarker, infowindow, marker.title);
+            oldStuff.push(gMarker);
+            var info = "<h3>" + marker.title + "</h3><p>" + marker.description + "</p>";
+            bindInfoWindow(gMarker, infowindow, info);
           }
           console.log(data);
           //alert(data);
@@ -92,7 +94,7 @@ function calcRoute(start, end, radius, pointsCallback) {
   };
   directionsService.route(request, function(response, status) {
     if (status == google.maps.DirectionsStatus.OK) {
-      directionsDisplay.setDirections(response);
+      //directionsDisplay.setDirections(response);
       
       var points = response.routes[0].overview_path;
       var pointsSearch = [];
@@ -103,7 +105,7 @@ function calcRoute(start, end, radius, pointsCallback) {
           strokeOpacity: 0.8,
           strokeWeight: 2,
           fillColor: '#FF0000',
-          fillOpacity: 0.35,
+          fillOpacity: 0.1,
           map: map,
           center: point,
           radius: radius,
