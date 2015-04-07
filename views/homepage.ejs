@@ -17,41 +17,40 @@ body {
 
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBlM4TmmBINwcow1cQtcO359u8jX3qTFSo"></script>
 <script type="text/javascript">
+var directionsDisplay;
+var directionsService = new google.maps.DirectionsService();
 var map;
 
 function initialize() {
-  var berlin = new google.maps.LatLng(52.5166667, 13.4);
+  directionsDisplay = new google.maps.DirectionsRenderer();
+  var chicago = new google.maps.LatLng(41.850033, -87.6500523);
   var mapOptions = {
-    center: berlin,
-    zoom: 10
+    zoom: 7,
+    center: chicago
   };
-  map = new google.maps.Map(document.getElementById('map-canvas'),
-      mapOptions);
-}
-google.maps.event.addDomListener(window, 'load', initialize);
-//var that = this;
-
-function dirSearch (src, dst, mode) {
-  var directionsDisplay = new google.maps.DirectionsRenderer({
-    map: map,
-    panel: document.getElementById('directions'),
-    draggable: true
+  map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+  directionsDisplay.setMap(map);
+  
+  $("#button-search").click(function() {
+    calcRoute($("#input-from").val(), $("#input-to").val());
+    return false;
   });
+}
 
-  var ds = new google.maps.DirectionsService();
-  ds.route({
-    origin : 'Potsdam',
-    destination : 'Berlin',
-    region : 'at',
+function calcRoute(start, end) {
+  var request = {
+    origin: start,
+    destination: end,
     travelMode: google.maps.TravelMode.DRIVING
-  }, function(result, status) {
-    if(status == google.maps.DirectionsStatus.OK) {
-      directionsDisplay.setDirections(result);
+  };
+  directionsService.route(request, function(response, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
     }
   });
 }
 
-dirSearch('Berlin', 'Potsdam', 'bicycle');
+google.maps.event.addDomListener(window, 'load', initialize);
 </script>
 
 <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -71,14 +70,16 @@ dirSearch('Berlin', 'Potsdam', 'bicycle');
         <li><a href="#about">About</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>-->
-      <form class="navbar-form navbar-left" role="search">
+      <form class="navbar-form navbar-left" role="search" action="#">
         <div class="form-group">
           <input type="text" class="form-control" placeholder="Suchbegriff">
           <select class="form-control">
             <option>Kategorie</option>
           </select>
+          <input id="input-from" type="text" class="form-control" placeholder="Start">
+          <input id="input-to" type="text" class="form-control" placeholder="Ziel">
         </div>
-        <button type="submit" class="btn btn-default">Suchen</button>
+        <button id="button-search" type="submit" class="btn btn-default">Suchen</button>
       </form>
     </div><!--/.nav-collapse -->
   </div>
