@@ -30,7 +30,7 @@ module.exports = {
       url += "&latitude=" + point.lat;
       url += "&longitude=" + point.lng;
       url += "&distance=" + point.radius + "&distanceUnit=KM";
-      res.send(url + "\n");
+      //res.send(url + "\n");
       
       /*
       request({
