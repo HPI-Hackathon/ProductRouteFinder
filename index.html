@@ -35,41 +35,69 @@
 
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBlM4TmmBINwcow1cQtcO359u8jX3qTFSo"></script>
     <script type="text/javascript">
-    var map;
+    var directionsDisplay;
+	var directionsService = new google.maps.DirectionsService();
+	var map;
 
-    function initialize() {
-      var berlin = new google.maps.LatLng(52.5166667, 13.4);
-      var mapOptions = {
-        center: berlin,
-        zoom: 10
-      };
-      map = new google.maps.Map(document.getElementById('map-canvas'),
-          mapOptions);
-    }
-    google.maps.event.addDomListener(window, 'load', initialize);
-    //var that = this;
+	function initialize() {
+	  directionsDisplay = new google.maps.DirectionsRenderer();
+	  var chicago = new google.maps.LatLng(41.850033, -87.6500523);
+	  var mapOptions = {
+	    zoom:7,
+	    center: chicago
+	  };
+	  map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+	  directionsDisplay.setMap(map);
+	}
 
-    function dirSearch (src, dst, mode) {
-      var directionsDisplay = new google.maps.DirectionsRenderer({
-        map: map,
-        panel: document.getElementById('directions'),
-        draggable: true
-      });
+	function calcRoute() {
+	  var start = document.getElementById('start').value;
+	  var end = document.getElementById('end').value;
+	  var request = {
+	      origin:start,
+	      destination:end,
+	      travelMode: google.maps.TravelMode.DRIVING
+	  };
+	  directionsService.route(request, function(response, status) {
+	    if (status == google.maps.DirectionsStatus.OK) {
+	      directionsDisplay.setDirections(response);
+	    }
+	  });
+	}
+	google.maps.event.addDomListener(window, 'load', initialize);
+    // function initialize() {
+    //   var berlin = new google.maps.LatLng(52.5166667, 13.4);
+    //   var mapOptions = {
+    //     center: berlin,
+    //     zoom: 10
+    //   };
+    //   map = new google.maps.Map(document.getElementById('map-canvas'),
+    //       mapOptions);
+    // }
+    // google.maps.event.addDomListener(window, 'load', initialize);
+    // //var that = this;
 
-      var ds = new google.maps.DirectionsService();
-      ds.route({
-        origin : 'Potsdam',
-        destination : 'Berlin',
-        region : 'at',
-        travelMode: google.maps.TravelMode.DRIVING
-      }, function(result, status) {
-        if(status == google.maps.DirectionsStatus.OK) {
-          directionsDisplay.setDirections(result);
-        }
-      });
-    }
+    // function dirSearch (src, dst, mode) {
+    //   var directionsDisplay = new google.maps.DirectionsRenderer({
+    //     map: map,
+    //     panel: document.getElementById('directions'),
+    //     draggable: true
+    //   });
 
-    dirSearch('Berlin', 'Potsdam', 'bicycle');
+    //   var ds = new google.maps.DirectionsService();
+    //   ds.route({
+    //     origin : 'Potsdam',
+    //     destination : 'Berlin',
+    //     region : 'at',
+    //     travelMode: google.maps.TravelMode.DRIVING
+    //   }, function(result, status) {
+    //     if(status == google.maps.DirectionsStatus.OK) {
+    //       directionsDisplay.setDirections(result);
+    //     }
+    //   });
+    // }
+
+    // dirSearch('Berlin', 'Potsdam', 'bicycle');
     </script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -80,7 +108,40 @@
   </head>
 
   <body>
-
+<div id="panel">
+    <b>Start: </b>
+    <select id="start" onchange="calcRoute();">
+      <option value="chicago, il">Chicago</option>
+      <option value="st louis, mo">St Louis</option>
+      <option value="joplin, mo">Joplin, MO</option>
+      <option value="oklahoma city, ok">Oklahoma City</option>
+      <option value="amarillo, tx">Amarillo</option>
+      <option value="gallup, nm">Gallup, NM</option>
+      <option value="flagstaff, az">Flagstaff, AZ</option>
+      <option value="winona, az">Winona</option>
+      <option value="kingman, az">Kingman</option>
+      <option value="barstow, ca">Barstow</option>
+      <option value="san bernardino, ca">San Bernardino</option>
+      <option value="los angeles, ca">Los Angeles</option>
+    </select>
+    <b>End: </b>
+    <select id="end" onchange="calcRoute();">
+      <option value="chicago, il">Chicago</option>
+      <option value="st louis, mo">St Louis</option>
+      <option value="joplin, mo">Joplin, MO</option>
+      <option value="oklahoma city, ok">Oklahoma City</option>
+      <option value="amarillo, tx">Amarillo</option>
+      <option value="gallup, nm">Gallup, NM</option>
+      <option value="flagstaff, az">Flagstaff, AZ</option>
+      <option value="winona, az">Winona</option>
+      <option value="kingman, az">Kingman</option>
+      <option value="barstow, ca">Barstow</option>
+      <option value="san bernardino, ca">San Bernardino</option>
+      <option value="los angeles, ca">Los Angeles</option>
+    </select>
+    </div>
+    <div id="map-canvas"></div>
+    
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
