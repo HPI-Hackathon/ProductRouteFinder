@@ -38,11 +38,22 @@ module.exports = {
           continue;
         markersIDs.push(marker);
         
+        var image = "";
+        for (var j in ad.pictures.picture) {
+          for (var k in ad.pictures.picture[j].link) {
+            var img = ad.pictures.picture[j].link[k];
+            //console.log(img);
+            if (img.rel == "large")
+              image = img.href;
+          }
+        }
+        
         var marker = {
           id: ad.id,
           title: ad.title.value,
           description: ad.description.value,
           latLng: [ad["ad-address"].latitude.value, ad["ad-address"].longitude.value],
+          image: image,
         };
         markers.push(marker);
         //console.log(marker);
@@ -94,5 +105,5 @@ module.exports = {
       console.log(url);
     }
     */
-  }
+  },
 };

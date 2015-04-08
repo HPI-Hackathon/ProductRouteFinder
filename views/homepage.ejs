@@ -71,7 +71,13 @@ function initialize() {
               title: marker.title
             });
             oldStuff.push(gMarker);
-            var info = "<h3>" + marker.title + "</h3><p>" + marker.description + "</p>";
+            var info = "<h3>" + marker.title + "</h3>";
+            if (marker.image != "") {
+              var image = new Image();
+              image.src = marker.image;
+              info += "<p><center><img src='" + marker.image + "' /></center></p>";
+            }
+            info += "<p>" + marker.description + "</p>";
             bindInfoWindow(gMarker, infowindow, info);
           }
           console.log(data);
