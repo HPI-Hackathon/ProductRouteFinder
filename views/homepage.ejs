@@ -13,6 +13,16 @@ body {
 .container-fluid, .row, .col-md-8 {
   height: 100%;
 }
+
+.media-left {
+  min-width: 145px;
+  text-align: center;
+}
+
+.media-left img {
+  margin-left: auto;
+  margin-right: auto;
+}
 </style>
 
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBlM4TmmBINwcow1cQtcO359u8jX3qTFSo"></script>
@@ -37,13 +47,24 @@ function clearOldMarkers() {
   for (var i = 0; i < oldMarkers.length; i++)
     oldMarkers[i].setMap(null);
   oldMarkers = [];
-  $("#results ul").empty();
+  $("#results").empty();
 }
 
-function bindInfoWindow(marker, infowindow, content) {
+function bindInfoWindow(marker, markerIndex, infowindow, content) {
   google.maps.event.addListener(marker, "click", function() {
     infowindow.setContent(content);
     infowindow.open(map, marker);
+    
+    // TODO maybe scroll to element right when click marker...
+    document.getElementById("ad-" + markerIndex).scrollIntoView(true);
+    /*
+    console.log("scroll to " + markerIndex);
+    var offset = $("#ad-" + markerIndex).offset();
+    console.log(offset);
+    console.log($("#sidebar").offset());
+    //$("#sidebar").animate({ scrollTop: offset.top - $("#sidebar").offset().top }, 1000);
+    $("#sidebar").scrollTop(offset.top - $("#sidebar").offset().top);
+    */
   });
 }
 
@@ -110,19 +131,50 @@ function initialize() {
               map: map,
               title: marker.title
             });
+            var markerIndex = oldMarkers.length;
             oldMarkers.push(gMarker);
             var info = "<a href='" + marker.url + "'><h3>" + marker.title + "</h3></a>";
+            if (marker.price != -1) {
+              info += "<h5>" + marker.price + "€</h5>";
+            }
             if (marker.image != "") {
               var image = new Image();
               image.src = marker.image;
               info += "<p><center><img src='" + marker.image + "' /></center></p>";
             }
             info += "<p>" + marker.description + "</p>";
-            bindInfoWindow(gMarker, infowindow, info);
+            bindInfoWindow(gMarker, markerIndex, infowindow, info);
             
-            var li = $("<li></li>");
-            li.html(marker.title);
-            $("#results ul").append(li);
+            /*
+            <div class="media">
+              <div class="media-left media-middle">
+                <a href="#">
+                  <img class="media-object" src="..." alt="...">
+                </a>
+              </div>
+              <div class="media-body">
+                <h4 class="media-heading">Middle aligned media</h4>
+              </div>
+            </div>
+            */
+            
+            var media = $('<div class="media"><div class="media-left media-top"><img class="media-object" src=""></div><div class="media-body"><h4 class="media-heading">Middle aligned media</h4><span></span></div></div>');
+            media.attr("id", "ad-" + markerIndex);
+            media.find("img").attr("src", marker.imageThumbnail);
+            media.find("h4").html(marker.title);
+            if (marker.price != -1)
+              media.find("span").html(marker.price + "€");
+              
+            media.data("marker-index", markerIndex);
+            
+            media.click(function() {
+              var marker = oldMarkers[$(this).data("marker-index")];
+              console.log("pan to " + $(this).data("marker-index"));
+              map.panTo(marker.getPosition());
+              map.setZoom(13);
+              new google.maps.event.trigger(marker, "click");
+            });
+            $("#results").append(media);
             break;
           }
         }
@@ -132,6 +184,8 @@ function initialize() {
     });
     return false;
   });
+  
+  $(".button-route").first().click();
 }
 
 function calcRoute(start, end, radius, transport, pointsCallback) {  
@@ -252,11 +306,11 @@ google.maps.event.addDomListener(window, 'load', initialize);
 
 <div class="container-fluid">
   <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-8" style="padding-left: 0">
       <div id="map-canvas"></div>
       <div id="directions"></div>
     </div>
-    <div class="col-md-4">
+    <div id="sidebar" class="col-md-4" style="height: 100%; overflow-y: scroll; padding-bottom: 10px">
       <h3>Suche</h3>
       <form id="form-search" action="#">
         <div class="form-group">
@@ -269,9 +323,6 @@ google.maps.event.addDomListener(window, 'load', initialize);
       </form>
       <h3>Ergebnisse</h3>
       <div id="results">
-        <ul>
-        
-        </ul>
       </div>
     </div>
   </div>
