@@ -62,7 +62,7 @@ function initialize() {
     $("#input-radius").val($(this).data("radius"));
     $("#input-transport").val($(this).data("transport"));
     $("#submit-route").click();
-    return false;
+    //return false;
   });
   
   $("#submit-route").click(function() {
@@ -213,6 +213,17 @@ google.maps.event.addDomListener(window, 'load', initialize);
         <li><a href="#about">About</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>-->
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">My Places<span class="caret"></span></a>
+          <ul class="dropdown-menu" role="menu">            
+            <li><a class="button-route" href="#" data-from="Berlin" data-to="Berlin" data-radius="10" data-transport="driving">Berlin</a></li>
+            <li><a class="button-route" href="#" data-from="Berlin" data-to="Potsdam" data-radius="3" data-transport="driving">Berlin - Potsdam</a></li>
+            <li><a class="button-route" href="#" data-from="Neubrandenburg" data-to="Berlin" data-radius="10" data-transport="driving">Neubrandenburg - Berlin</a></li>
+            <li><a class="button-route" href="#" data-from="Bonn" data-to="Berlin" data-radius="10" data-transport="driving">Bonn - Berlin</a></li>
+          </ul>
+        </li>
+      </ul>
       <form id="form-route" class="navbar-form navbar-left" role="search" action="#">
         <div class="form-group">
           <input id="input-from" type="text" class="form-control" placeholder="Start">
@@ -228,7 +239,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
             <option value="walking">Laufen</option>
           </select>
         </div>
-        <button id="submit-route" type="submit" class="btn btn-default">Festlegen</button>
+        <button id="submit-route" type="submit" class="btn btn-default">Set</button>
       </form>
     </div><!--/.nav-collapse -->
   </div>
@@ -236,24 +247,11 @@ google.maps.event.addDomListener(window, 'load', initialize);
 
 <div class="container-fluid">
   <div class="row">
-    <div class="col-md-2">
-      <h3>Meine Standorte</h3>
-      <button type="button" class="button-route btn btn-default btn-block"
-        data-from="Berlin" data-to="Berlin" data-radius="10" data-transport="driving">Berlin</button>
-      <button type="button" class="button-route btn btn-default btn-block"
-        data-from="Potsdam" data-to="Potsdam" data-radius="10" data-transport="driving">Potsdam</button>
-      <button type="button" class="button-route btn btn-default btn-block"
-        data-from="Berlin" data-to="Potsdam" data-radius="3" data-transport="transit">Berlin - Potsdam</button>
-      <button type="button" class="button-route btn btn-default btn-block"
-        data-from="Neubrandenburg" data-to="Berlin" data-radius="10" data-transport="driving">Neubrandenburg - Berlin</button>
-      <button type="button" class="button-route btn btn-default btn-block"
-        data-from="Bonn" data-to="Berlin" data-radius="10" data-transport="driving">Bonn - Berlin</button>
-    </div>
     <div class="col-md-8">
       <div id="map-canvas"></div>
       <div id="directions"></div>
     </div>
-    <div class="col-md-2">
+    <div class="col-md-4">
       <h3>Suche</h3>
       <form id="form-search" action="#">
         <div class="form-group">
