@@ -38,6 +38,13 @@ module.exports = {
           continue;
         markersIDs.push(marker);
         
+        var url = "";
+        for (var j in ad.link) {
+          var link = ad.link[j];
+          if (link.rel == "self-public-website")
+            url = link.href;
+        }
+        
         var image = "";
         for (var j in ad.pictures.picture) {
           for (var k in ad.pictures.picture[j].link) {
@@ -53,6 +60,7 @@ module.exports = {
           title: ad.title.value,
           description: ad.description.value,
           latLng: [ad["ad-address"].latitude.value, ad["ad-address"].longitude.value],
+          url: url,
           image: image,
         };
         markers.push(marker);
