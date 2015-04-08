@@ -218,7 +218,7 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
                 
         if (lastPoint != null) {
           var distance = google.maps.geometry.spherical.computeDistanceBetween(point, lastPoint);
-          if (distance < radius) {
+          if (distance < 1.5 * radius) {
             continue;
           }
         }
@@ -263,7 +263,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
-      </button>
+      </button> 
       <a class="navbar-brand" href="#"><img height=35 src="/images/logo-ebayk-402x802.png" alt=""></a>
     </div>
     <div id="navbar" class="collapse navbar-collapse">
@@ -276,10 +276,11 @@ google.maps.event.addDomListener(window, 'load', initialize);
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">My Places<span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">            
-            <li><a class="button-route" href="#" data-from="Berlin" data-to="Berlin" data-radius="10" data-transport="driving">Berlin</a></li>
-            <li><a class="button-route" href="#" data-from="Berlin" data-to="Potsdam" data-radius="3" data-transport="driving">Berlin - Potsdam</a></li>
-            <li><a class="button-route" href="#" data-from="Neubrandenburg" data-to="Berlin" data-radius="10" data-transport="driving">Neubrandenburg - Berlin</a></li>
-            <li><a class="button-route" href="#" data-from="Bonn" data-to="Berlin" data-radius="10" data-transport="driving">Bonn - Berlin</a></li>
+            <li><a class="button-route" href="#" data-from="Berlin" data-to="Berlin" data-radius="15" data-transport="driving">Berlin</a></li>
+            <li><a class="button-route" href="#" data-from="Potsdam" data-to="Potsdam" data-radius="10" data-transport="driving">Potsdam</a></li>
+            <li><a class="button-route" href="#" data-from="Berlin" data-to="Potsdam" data-radius="5" data-transport="driving">Berlin - Potsdam</a></li>
+            <li><a class="button-route" href="#" data-from="Neubrandenburg" data-to="Berlin" data-radius="20" data-transport="driving">Neubrandenburg - Berlin</a></li>
+            <li><a class="button-route" href="#" data-from="Bonn" data-to="Berlin" data-radius="30" data-transport="driving">Bonn - Berlin</a></li>
           </ul>
         </li>
       </ul>
