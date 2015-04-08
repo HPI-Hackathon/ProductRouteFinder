@@ -81,28 +81,35 @@ function initialize() {
       }
       
       var infowindow = new google.maps.InfoWindow({
-        content: "Nothing",
+        content: "Nothing"
       });
       
+      //console.log(points)
       //Add bids to Map
       for (var i in data.markers) {
         var marker = data.markers[i];
-        
         var latLng = new google.maps.LatLng(marker.latLng[0], marker.latLng[1]);
-        var gMarker = new google.maps.Marker({
-          position: latLng,
-          map: map,
-          title: marker.title
-        });
-        oldMarkers.push(gMarker);
-        var info = "<a href='" + marker.url + "' target='_blank'><h3>" + marker.title + "</h3></a>";
-        if (marker.image != "") {
-          var image = new Image();
-          image.src = marker.image;
-          info += "<p><center><img src='" + marker.image + "' /></center></p>";
+        for (var point in currentPoints) {
+          var googlePoint = new google.maps.LatLng(currentPoints[point].lat, currentPoints[point].lng)
+          var distance = google.maps.geometry.spherical.computeDistanceBetween(latLng, googlePoint);
+          if (distance - currentPoints[point].radius < 0) {
+            var gMarker = new google.maps.Marker({
+              position: latLng,
+              map: map,
+              title: marker.title
+            });
+            oldMarkers.push(gMarker);
+            var info = "<h3>" + marker.title + "</h3>";
+            if (marker.image != "") {
+              var image = new Image();
+              image.src = marker.image;
+              info += "<p><center><img src='" + marker.image + "' /></center></p>";
+            }
+            info += "<p><a href='" + marker.url + "' target='_blank'>Link</a></p>";
+            info += "<p>" + marker.description + "</p>";
+            bindInfoWindow(gMarker, infowindow, info);
+          }
         }
-        info += "<p>" + marker.description + "</p>";
-        bindInfoWindow(gMarker, infowindow, info);
       }
       console.log(data);
       //alert(data);
@@ -171,7 +178,7 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
         });
       }
       
-      pointsCallback(pointsSearch);
+      pointsCallback(pointsSearch); //used for giving points to kleinanzeigen API
     }
   });
 }
