@@ -19,13 +19,24 @@ body {
 <script type="text/javascript">
 var directionsDisplay;
 var directionsService = new google.maps.DirectionsService();
-var oldStuff = [];
+var oldRoute = [], oldMarkers = [];
+var currentPoints = [];
 var map;
 
-function clearOldStuff() {
-  for (var i = 0; i < oldStuff.length; i++)
-    oldStuff[i].setMap(null);
-  oldStuff = [];
+function clearOldRoute() {
+  for (var i = 0; i < oldRoute.length; i++)
+    oldRoute[i].setMap(null);
+  oldRoute = [];
+  // dirty hack
+  directionsDisplay.setMap(null);
+  directionsDisplay = new google.maps.DirectionsRenderer();
+  directionsDisplay.setMap(map);
+}
+
+function clearOldMarkers() {
+  for (var i = 0; i < oldMarkers.length; i++)
+    oldMarkers[i].setMap(null);
+  oldMarkers = [];
 }
 
 function bindInfoWindow(marker, infowindow, content) {
@@ -45,49 +56,56 @@ function initialize() {
   map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
   directionsDisplay.setMap(map);
   
-  $("#button-search").click(function() {
-    clearOldStuff();
+  $("#submit-route").click(function() {
+    clearOldRoute();
+    calcRoute($("#input-from").val(), $("#input-to").val(), parseInt($("#input-radius").val()),
+      $("#input-transport").val(), function(points) {
+        currentPoints = points;
+    });
+    return false;
+  });
+  
+  $("#submit-search").click(function() {
+    clearOldMarkers();
     var radius = parseInt($("#input-radius").val());
-    calcRoute($("#input-from").val(), $("#input-to").val(), radius,
-        $("#input-transport").val(), function(points) {
-      console.log(points);
-      var data = {
-        "query" : $("#input-query").val(),
-        "points" : points,
+    
+    console.log(currentPoints);
+    var data = {
+      "query" : $("#input-query").val(),
+      "points" : currentPoints,
+    }
+    io.socket.post("/ebay/ads/", data, function(data, jwres) {
+      if (jwres.statusCode !== 200) {
+        alert("WTF?!");
+        return;
       }
-      io.socket.post("/ebay/ads/", data, function(data, jwres) {
-          if (jwres.statusCode !== 200) {
-            alert("WTF?!");
-            return;
-          }
-          
-          var infowindow = new google.maps.InfoWindow({
-            content: "Nothing",
-          });
-          
-          //Add bids to Map
-          for (var i in data.markers) {
-            var marker = data.markers[i];
-            
-            var latLng = new google.maps.LatLng(marker.latLng[0], marker.latLng[1]);
-            var gMarker = new google.maps.Marker({
-              position: latLng,
-              map: map,
-              title: marker.title
-            });
-            oldStuff.push(gMarker);
-            var info = "<a href='" + marker.url + "' target='_blank'><h3>" + marker.title + "</h3></a>";
-            if (marker.image != "") {
-              var image = new Image();
-              image.src = marker.image;
-              info += "<p><center><img src='" + marker.image + "' /></center></p>";
-            }
-            info += "<p>" + marker.description + "</p>";
-            bindInfoWindow(gMarker, infowindow, info);
-          }
-          console.log(data);
-          //alert(data);
+      
+      var infowindow = new google.maps.InfoWindow({
+        content: "Nothing",
       });
+      
+      //Add bids to Map
+      for (var i in data.markers) {
+        var marker = data.markers[i];
+        
+        var latLng = new google.maps.LatLng(marker.latLng[0], marker.latLng[1]);
+        var gMarker = new google.maps.Marker({
+          position: latLng,
+          map: map,
+          title: marker.title
+        });
+        oldMarkers.push(gMarker);
+        var info = "<a href='" + marker.url + "' target='_blank'><h3>" + marker.title + "</h3></a>";
+        if (marker.image != "") {
+          var image = new Image();
+          image.src = marker.image;
+          info += "<p><center><img src='" + marker.image + "' /></center></p>";
+        }
+        info += "<p>" + marker.description + "</p>";
+        bindInfoWindow(gMarker, infowindow, info);
+      }
+      console.log(data);
+      //alert(data);
     });
     return false;
   });
@@ -142,7 +160,7 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
         };
         // Add the circle for every point on the map
         pointCircle = new google.maps.Circle(circleOptions);
-        oldStuff.push(pointCircle);
+        oldRoute.push(pointCircle);
         // ansonsten wenn es nur einen punkt gibt einfach den circle anzeigen
         map.fitBounds(pointCircle.getBounds());
         //console.log(point);
@@ -180,10 +198,6 @@ google.maps.event.addDomListener(window, 'load', initialize);
       </ul>-->
       <form class="navbar-form navbar-left" role="search" action="#">
         <div class="form-group">
-          <input id="input-query" type="text" class="form-control" placeholder="Suchbegriff">
-          <!--<select class="form-control">
-            <option>Kategorie</option>
-          </select>-->
           <input id="input-from" type="text" class="form-control" placeholder="Start">
           <input id="input-to" type="text" class="form-control" placeholder="Ziel">
           <input id="input-radius" type="text" class="form-control" placeholder="Umkreis" value="5000">
@@ -194,7 +208,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
             <option value="walking">Laufen</option>
           </select>
         </div>
-        <button id="button-search" type="submit" class="btn btn-default">Suchen</button>
+        <button id="submit-route" type="submit" class="btn btn-default">Festlegen</button>
       </form>
     </div><!--/.nav-collapse -->
   </div>
@@ -209,6 +223,15 @@ google.maps.event.addDomListener(window, 'load', initialize);
       <div id="directions"></div>
     </div>
     <div class="col-md-2">
+      <form action="#">
+        <div class="form-group">
+          <input id="input-query" type="text" class="form-control" placeholder="Suchbegriff" />
+          <select class="form-control">
+            <option>Kategorie</option>
+          </select>
+          <button id="submit-search" type="submit" class="btn btn-default">Suchen</button>
+        </div>
+      </form>
     </div>
   </div>
 </div><!-- /.container -->
