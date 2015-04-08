@@ -36,11 +36,12 @@
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBlM4TmmBINwcow1cQtcO359u8jX3qTFSo"></script>
     <script type="text/javascript">
         // TODO make the line draggable, current version with draggable and zIndex works but breaks the format
-        
+        // TODO trigger with default values or what should be the initial state (blank with zoomed-out Germany?)
         var directionsDisplay;
         var directionsService = new google.maps.DirectionsService();
         var map;
-        var markers = [];
+        var circleMarkers = [];
+        var resultMarkers = [];
 
         // called after the dom
         function initialize() {
@@ -82,17 +83,18 @@
                     directionsDisplay.setDirections(response);
                     
                     // clear previous circles
-                    for (i = 0; i < markers.length; i += 1) {
-                        markers[i].setMap(null);
+                    for (i = 0; i < circleMarkers.length; i += 1) {
+                        circleMarkers[i].setMap(null);
                     }
 
                     // construct the circle for each value in citymap
                     // note: we scale the area of the circle based on the population
-                    var points = response.routes[0].overview_path;
+                    var points = [];
+//                    var points = response.routes[0].overview_path;
 
                     // for every waypoint
                     // TODO this could be more sophisticated
-                    for (var i in points) {
+                    for (i = 0; i < points.length; i += 1) {
                         var point = points[i];
                         var circleOptions = {
                             strokeColor: '#FF0000',
@@ -108,12 +110,62 @@
 //                            }
                         };
                         // add the circle
-                        markers.push(new google.maps.Circle(circleOptions));
+                        circleMarkers.push(new google.maps.Circle(circleOptions));
                     }
 
                     // TODO get ebay-kleinanzeigen results
 
                     // TODO draw result marker
+                    // clear previous results
+                    for (i = 0; i < resultMarkers.length; i += 1) {
+                        resultMarkers[i].setMap(null);
+                    }
+                    
+                    max_size = 100;
+                    height = 600;
+                    width = 800;
+                    // TODO for every result
+                    var image = {
+                        url: 'content/janosch_bike.jpg', // 800 * 600
+                        scaledSize: width >= height ? new google.maps.Size(max_size * width / height, max_size) : new google.maps.Size(max_size, max_size * height / width),
+                        //origin: new google.maps.Point(0,0),
+                        //anchor: new google.maps.Point(0, 0)
+                    };
+                    
+                    var markerOptions = {
+                        position : new google.maps.LatLng(52.5166667, 13.4), // TODO need google.maps.LatLng from ebay 
+                        map : map,
+                        icon : image, // TODO need this from ebay
+                        markerShape : {
+                            type : 'rect',
+                            coords : [0, 0, 100, 100]
+                        },
+                        title : 'marker 1',
+                    };
+                    resultMarkers.push(new google.maps.Marker(markerOptions));
+                    
+                    // TODO redundant!! just for testing
+                    width2 = 453;
+                    height2 = 375;
+                    var image2 = {
+                        url: 'content/geile_spiele.jpg', // 800 * 600
+                        scaledSize: width >= height ? new google.maps.Size(max_size * width2 / height2, max_size) : new google.maps.Size(max_size, max_size * height2 / widt2h),
+                        //origin: new google.maps.Point(0,0),
+                        //anchor: new google.maps.Point(0, 0)
+                    };
+                    
+                    var markerOptions2 = {
+                        position : new google.maps.LatLng(52.5166667, 13.39), // TODO need google.maps.LatLng from ebay 
+                        map : map,
+                        icon : image2, // TODO need this from ebay
+                        markerShape : {
+                            type : 'rect',
+                            coords : [0, 0, 100, 100]
+                        },
+                        title : 'marker 1',
+                    };
+                    resultMarkers.push(new google.maps.Marker(markerOptions2));
+                    // TODO redundant end!!
                 }
             });
         } // calcRoute
@@ -131,11 +183,11 @@
   <body>
 <div id="panel">
     <b>Start: </b>
-    <input id="start" onchange="calcRoute();">
+    <input id="start" value="Potsdam" onchange="calcRoute();">
     <b>End: </b>
-    <input id="end" onchange="calcRoute();"> 
+    <input id="end" value="Berlin" onchange="calcRoute();"> 
     <b>Umkreis</b> 
-    <input id="radius" onchange="calcRoute();">
+    <input id="radius" value="1000" onchange="calcRoute();">
 
     </div>
     <div id="map-canvas"></div>
