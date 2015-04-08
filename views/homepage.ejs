@@ -56,6 +56,7 @@ function bindInfoWindow(marker, markerIndex, infowindow, content) {
     infowindow.open(map, marker);
     
     // TODO maybe scroll to element right when click marker...
+    document.getElementById("ad-" + markerIndex).scrollIntoView(true);
     /*
     console.log("scroll to " + markerIndex);
     var offset = $("#ad-" + markerIndex).offset();
