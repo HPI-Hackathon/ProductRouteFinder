@@ -70,6 +70,8 @@ function initialize() {
     calcRoute($("#input-from").val(), $("#input-to").val(), parseInt($("#input-radius").val()),
       $("#input-transport").val(), function(points) {
         currentPoints = points;
+        // suche updaten wenn route/position verändert wurde
+        $("#submit-search").click();
     });
     return false;
   });
@@ -233,11 +235,13 @@ google.maps.event.addDomListener(window, 'load', initialize);
     <div class="col-md-2">
       <h3>Meine Routen</h3>
       <button type="button" class="button-route btn btn-default btn-block"
-        data-from="Berlin" data-to="Berlin" data-radius="2000" data-transport="driving">Berlin</button>
+        data-from="Berlin" data-to="Berlin" data-radius="10000" data-transport="driving">Berlin</button>
       <button type="button" class="button-route btn btn-default btn-block"
-        data-from="Neubrandenburg" data-to="Berlin" data-radius="2000" data-transport="driving">Neubrandenburg - Berlin</button>
+        data-from="Berlin" data-to="Potsdam" data-radius="3000" data-transport="transit">Berlin - Potsdam</button>
       <button type="button" class="button-route btn btn-default btn-block"
-        data-from="Bonn" data-to="Berlin" data-radius="2000" data-transport="driving">Bonn - Berlin</button>
+        data-from="Neubrandenburg" data-to="Berlin" data-radius="10000" data-transport="driving">Neubrandenburg - Berlin</button>
+      <button type="button" class="button-route btn btn-default btn-block"
+        data-from="Bonn" data-to="Berlin" data-radius="10000" data-transport="driving">Bonn - Berlin</button>
     </div>
     <div class="col-md-8">
       <div id="map-canvas"></div>
