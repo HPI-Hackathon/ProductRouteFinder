@@ -24,7 +24,8 @@ module.exports = {
     var query = req.body.query;
     
     // api seems to be slooooow
-    var maxPages = 10;
+    var maxPages = 1;
+    var perPage = 100;
     
     var markersIDs = [];
     var markers = [];
@@ -91,7 +92,7 @@ module.exports = {
       }
     };
     
-    var url = "https://api.ebay-kleinanzeigen.de/api/ads.json?locationId=3331&q=" + query;
+    var url = "https://api.ebay-kleinanzeigen.de/api/ads.json?locationId=3331&size=" + perPage + "&q=" + query;
     console.log("Loading " + url);
     request({
       url: url,
