@@ -47,8 +47,8 @@ function initialize() {
   
   $("#button-search").click(function() {
     clearOldStuff();
-    calcRoute($("#input-from").val(), $("#input-to").val(),
-        parseInt($("#input-radius").val()),
+    var radius = parseInt($("#input-radius").val());
+    calcRoute($("#input-from").val(), $("#input-to").val(), radius,
         $("#input-transport").val(), function(points) {
       console.log(points);
       var data = {
@@ -64,11 +64,13 @@ function initialize() {
           var infowindow = new google.maps.InfoWindow({
             content: "Nothing",
           });
+          
           for (var i in data.markers) {
             var marker = data.markers[i];
             
+            var latLng = new google.maps.LatLng(marker.latLng[0], marker.latLng[1]);
             var gMarker = new google.maps.Marker({
-              position: new google.maps.LatLng(marker.latLng[0], marker.latLng[1]),
+              position: latLng,
               map: map,
               title: marker.title
             });
@@ -100,6 +102,7 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
   if (transport == "bicycling") travelMode = google.maps.TravelMode.BICYCLING;
   else if (transport == "transit") travelMode = google.maps.TravelMode.TRANSIT;
   else if (transport == "walking") travelMode = google.maps.TravelMode.WALKING;
+  console.log(transport, travelMode);
   
   var request = {
     origin: start,
@@ -114,8 +117,19 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
       
       var points = response.routes[0].overview_path;
       var pointsSearch = [];
+      
+      var lastPoint = null;
       for (var i = 0; i < points.length; i++) {
         var point = points[i];
+                
+        if (lastPoint != null) {
+          var distance = google.maps.geometry.spherical.computeDistanceBetween(point, lastPoint);
+          if (distance < radius) {
+            continue;
+          }
+        }
+        lastPoint = point;
+        
         var circleOptions = {
           strokeColor: '#FF0000',
           strokeOpacity: 0.8,
