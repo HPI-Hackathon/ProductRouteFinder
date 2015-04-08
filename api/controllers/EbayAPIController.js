@@ -49,23 +49,35 @@ module.exports = {
               url = link.href;
           }
           
-          var image = "";
+          var image = "", imageThumbnail = "";
           for (var j in ad.pictures.picture) {
             for (var k in ad.pictures.picture[j].link) {
               var img = ad.pictures.picture[j].link[k];
               //console.log(img);
               if (img.rel == "large")
                 image = img.href;
+              if (img.rel == "teaser")
+                imageThumbnail = img.href;
             }
+          }
+          
+          var price = -1;
+          if ("price" in ad) {
+            if (ad.price["price-type"].value == "FREE")
+              price = 0;
+            else if (ad.price.amount.value !== undefined)
+              price = ad.price.amount.value;
           }
           
           var marker = {
             id: ad.id,
             title: ad.title.value,
             description: ad.description.value,
+            price: price,
             latLng: [ad["ad-address"].latitude.value, ad["ad-address"].longitude.value],
             url: url,
             image: image,
+            imageThumbnail: imageThumbnail,
           };
           markers.push(marker);
           //console.log(marker);
