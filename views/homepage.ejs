@@ -37,6 +37,7 @@ function clearOldMarkers() {
   for (var i = 0; i < oldMarkers.length; i++)
     oldMarkers[i].setMap(null);
   oldMarkers = [];
+  $("#results ul").empty();
 }
 
 function bindInfoWindow(marker, infowindow, content) {
@@ -118,6 +119,10 @@ function initialize() {
             }
             info += "<p>" + marker.description + "</p>";
             bindInfoWindow(gMarker, infowindow, info);
+            
+            var li = $("<li></li>");
+            li.html(marker.title);
+            $("#results ul").append(li);
             break;
           }
         }
