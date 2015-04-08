@@ -65,7 +65,6 @@ function initialize() {
             content: "Nothing",
           });
           
-          //console.log(points)
           //Add bids to Map
           for (var i in data.markers) {
             var marker = data.markers[i];
@@ -73,7 +72,7 @@ function initialize() {
             for (var point in points) {
               var googlePoint = new google.maps.LatLng(points[point].lat, points[point].lng)
               var distance = google.maps.geometry.spherical.computeDistanceBetween(latLng,googlePoint);
-              if (distance - points[point].radius < 0) {
+              if (distance - points[point].radius < 0) {      //Just Points that are in the circle
                     var gMarker = new google.maps.Marker({
                       position: latLng,
                       map: map,
@@ -94,7 +93,6 @@ function initialize() {
             };
             
           }
-          //console.log(data);
           //alert(data);
       });
     });
