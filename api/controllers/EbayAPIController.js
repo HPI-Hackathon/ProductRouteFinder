@@ -8,8 +8,8 @@
 var request = require("request");
 
 var AUTH = {
-  username: "iphone",
-  pass: "",
+  username: "hpi_hackathon",
+  pass: "dsk38a1l",
 };
 
 module.exports = {
