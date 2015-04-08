@@ -118,6 +118,7 @@ function initialize() {
             }
             info += "<p>" + marker.description + "</p>";
             bindInfoWindow(gMarker, infowindow, info);
+            break;
           }
         }
       }
@@ -263,6 +264,12 @@ google.maps.event.addDomListener(window, 'load', initialize);
           <button id="submit-search" type="submit" class="btn btn-default">Suchen</button>
         </div>
       </form>
+      <h3>Ergebnisse</h3>
+      <div id="results">
+        <ul>
+        
+        </ul>
+      </div>
     </div>
   </div>
 </div><!-- /.container -->
