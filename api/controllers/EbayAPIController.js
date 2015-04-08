@@ -136,7 +136,7 @@ module.exports = {
     
     function genURL(index) {
       var point = req.body.points[index];
-      return "https://api.ebay-kleinanzeigen.de/api/ads.json?size=200&latitude=" + point.lat + "&longitude=" + point.lng + "&distance=" + point.radius / 1000;
+      return "https://api.ebay-kleinanzeigen.de/api/ads.json?size=200&latitude=" + point.lat + "&longitude=" + point.lng + "&distance=" + point.radius / 1000 + "&q=" + query;
     }
     
     var index = 0;
