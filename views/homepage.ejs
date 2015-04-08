@@ -56,6 +56,15 @@ function initialize() {
   map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
   directionsDisplay.setMap(map);
   
+  $(".button-route").click(function() {
+    $("#input-from").val($(this).data("from"));
+    $("#input-to").val($(this).data("to"));
+    $("#input-radius").val($(this).data("radius"));
+    $("#input-transport").val($(this).data("transport"));
+    $("#submit-route").click();
+    return false;
+  });
+  
   $("#submit-route").click(function() {
     clearOldRoute();
     calcRoute($("#input-from").val(), $("#input-to").val(), parseInt($("#input-radius").val()),
@@ -127,7 +136,6 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
   if (transport == "bicycling") travelMode = google.maps.TravelMode.BICYCLING;
   else if (transport == "transit") travelMode = google.maps.TravelMode.TRANSIT;
   else if (transport == "walking") travelMode = google.maps.TravelMode.WALKING;
-  console.log(transport, travelMode);
   
   var request = {
     origin: start,
@@ -203,7 +211,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
         <li><a href="#about">About</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>-->
-      <form class="navbar-form navbar-left" role="search" action="#">
+      <form id="form-route" class="navbar-form navbar-left" role="search" action="#">
         <div class="form-group">
           <input id="input-from" type="text" class="form-control" placeholder="Start">
           <input id="input-to" type="text" class="form-control" placeholder="Ziel">
@@ -224,13 +232,21 @@ google.maps.event.addDomListener(window, 'load', initialize);
 <div class="container-fluid">
   <div class="row">
     <div class="col-md-2">
+      <h3>Meine Routen</h3>
+      <button type="button" class="button-route btn btn-default btn-block"
+        data-from="Berlin" data-to="Berlin" data-radius="2000" data-transport="driving">Berlin</button>
+      <button type="button" class="button-route btn btn-default btn-block"
+        data-from="Neubrandenburg" data-to="Berlin" data-radius="2000" data-transport="driving">Neubrandenburg - Berlin</button>
+      <button type="button" class="button-route btn btn-default btn-block"
+        data-from="Bonn" data-to="Berlin" data-radius="2000" data-transport="driving">Bonn - Berlin</button>
     </div>
     <div class="col-md-8">
       <div id="map-canvas"></div>
       <div id="directions"></div>
     </div>
     <div class="col-md-2">
-      <form action="#">
+      <h3>Suche</h3>
+      <form id="form-search" action="#">
         <div class="form-group">
           <input id="input-query" type="text" class="form-control" placeholder="Suchbegriff" />
           <select class="form-control">
