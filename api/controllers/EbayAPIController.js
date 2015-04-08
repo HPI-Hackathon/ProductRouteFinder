@@ -8,8 +8,8 @@
 var request = require("request");
 
 var AUTH = {
-  username: "hpi_hackathon",
-  pass: "dsk38a1l",
+  username: "iphone",
+  pass: "",
 };
 
 module.exports = {
@@ -117,7 +117,8 @@ module.exports = {
         },
       }, generateHandler(callback));
     }
-    
+
+    /*
     // Berlin
     load("https://api.ebay-kleinanzeigen.de/api/ads.json?locationId=3331&size=" + perPage + "&q=" + query, function() {
       // Potsdam
@@ -131,6 +132,24 @@ module.exports = {
         });
       });
     });
+    */
+    
+    function genURL(index) {
+      var point = req.body.points[index];
+      return "https://api.ebay-kleinanzeigen.de/api/ads.json?size=200&latitude=" + point.lat + "&longitude=" + point.lng + "&distance=" + point.radius / 1000;
+    }
+    
+    var index = 0;
+    var myhandler = function() {
+      index++;
+      if (index >= req.body.points.length) {
+        res.send({"markers" : markers })
+      } else {
+        load(genURL(index), myhandler);
+      }
+    }
+    
+    load(genURL(0), myhandler);
     
     /*
     for (i in req.body.points) {
