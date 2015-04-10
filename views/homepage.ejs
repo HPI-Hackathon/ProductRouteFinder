@@ -29,31 +29,31 @@ body {
 <script type="text/javascript">
 var directionsDisplay;
 var directionsService = new google.maps.DirectionsService();
-var oldRoute = [], oldMarkers = [];
+var mapRoute = [], mapMarkers = [];
 var currentPoints = [];
 var map;
 
 function clearOldRoute() {
-  for (var i = 0; i < oldRoute.length; i++)
-    oldRoute[i].setMap(null);
-  oldRoute = [];
-  // dirty hack
+  for (var i = 0; i < mapRoute.length; i++)
+    mapRoute[i].setMap(null);
+  mapRoute = [];
+  // dirty hack to remove directions from map
   directionsDisplay.setMap(null);
   directionsDisplay = new google.maps.DirectionsRenderer();
   directionsDisplay.setMap(map);
 }
 
 function clearOldMarkers() {
-  for (var i = 0; i < oldMarkers.length; i++)
-    oldMarkers[i].setMap(null);
-  oldMarkers = [];
+  for (var i = 0; i < mapMarkers.length; i++)
+    mapMarkers[i].setMap(null);
+  mapMarkers = [];
   $("#results").empty();
 }
 
-function bindInfoWindow(marker, markerIndex, infowindow, content) {
+function bindInfoWindow(marker, markerIndex, infoWindow, content) {
   google.maps.event.addListener(marker, "click", function() {
-    infowindow.setContent(content);
-    infowindow.open(map, marker);
+    infoWindow.setContent(content);
+    infoWindow.open(map, marker);
     
     // TODO maybe scroll to element right when click marker...
     document.getElementById("ad-" + markerIndex).scrollIntoView(true);
@@ -102,85 +102,71 @@ function initialize() {
     clearOldMarkers();
     var radius = parseInt($("#input-radius").val()) * 1000;
     
-    console.log(currentPoints);
-    var data = {
+    var requestData = {
       "query" : $("#input-query").val(),
       "points" : currentPoints,
     }
-    io.socket.post("/ebay/ads/", data, function(data, jwres) {
+    io.socket.post("/ebay/ads/", requestData, function(data, jwres) {
       if (jwres.statusCode !== 200) {
         alert("WTF?!");
         return;
       }
       
-      var infowindow = new google.maps.InfoWindow({
-        content: "Nothing"
-      });
+      var infoWindow = new google.maps.InfoWindow();
       
-      //console.log(points)
       //Add bids to Map
       for (var i in data.markers) {
-        var marker = data.markers[i];
-        var latLng = new google.maps.LatLng(marker.latLng[0], marker.latLng[1]);
-        for (var point in currentPoints) {
-          var googlePoint = new google.maps.LatLng(currentPoints[point].lat, currentPoints[point].lng)
-          var distance = google.maps.geometry.spherical.computeDistanceBetween(latLng, googlePoint);
-          if (distance - currentPoints[point].radius < 0) {
-            var gMarker = new google.maps.Marker({
-              position: latLng,
-              map: map,
-              title: marker.title
-            });
-            var markerIndex = oldMarkers.length;
-            oldMarkers.push(gMarker);
-            var info = "<a href='" + marker.url + "'><h3>" + marker.title + "</h3></a>";
-            if (marker.price != -1) {
-              info += "<h5>" + marker.price + "€</h5>";
-            }
-            if (marker.image != "") {
-              var image = new Image();
-              image.src = marker.image;
-              info += "<p><center><img src='" + marker.image + "' /></center></p>";
-            }
-            info += "<p>" + marker.description + "</p>";
-            bindInfoWindow(gMarker, markerIndex, infowindow, info);
-            
-            /*
-            <div class="media">
-              <div class="media-left media-middle">
-                <a href="#">
-                  <img class="media-object" src="..." alt="...">
-                </a>
-              </div>
-              <div class="media-body">
-                <h4 class="media-heading">Middle aligned media</h4>
-              </div>
-            </div>
-            */
-            
-            var media = $('<div class="media"><div class="media-left media-top"><img class="media-object" src=""></div><div class="media-body"><h4 class="media-heading">Middle aligned media</h4><span></span></div></div>');
-            media.attr("id", "ad-" + markerIndex);
-            media.find("img").attr("src", marker.imageThumbnail);
-            media.find("h4").html(marker.title);
-            if (marker.price != -1)
-              media.find("span").html(marker.price + "€");
-              
-            media.data("marker-index", markerIndex);
-            
-            media.click(function() {
-              var marker = oldMarkers[$(this).data("marker-index")];
-              console.log("pan to " + $(this).data("marker-index"));
-              map.panTo(marker.getPosition());
-              map.setZoom(13);
-              new google.maps.event.trigger(marker, "click");
-            });
-            $("#results").append(media);
-            break;
-          }
+        var markerIndex = mapMarkers.length;
+        var ad = data.markers[i];
+        
+        var latLng = new google.maps.LatLng(ad.latLng[0], ad.latLng[1]);
+        var marker = new google.maps.Marker({
+          position: latLng,
+          map: map,
+          title: ad.title
+        });
+        mapMarkers.push(marker);
+        
+        var info = "<a href='" + ad.url + "'><h3>" + ad.title + "</h3></a>";
+        if (ad.price != -1) {
+          info += "<h5>" + ad.price + "€</h5>";
         }
+        if (ad.image != "") {
+          var image = new Image();
+          image.src = ad.image;
+          info += "<p><center><img src='" + ad.image + "' /></center></p>";
+        }
+        info += "<p>" + ad.description + "</p>";
+        bindInfoWindow(marker, markerIndex, infoWindow, info);
+        
+        /*
+        <div class="media">
+          <div class="media-left media-middle">
+            <a href="#">
+              <img class="media-object" src="..." alt="...">
+            </a>
+          </div>
+          <div class="media-body">
+            <h4 class="media-heading">Middle aligned media</h4>
+          </div>
+        </div>
+        */
+        
+        var result = $('<div class="media"><div class="media-left media-top"><img class="media-object" src=""></div><div class="media-body"><h4 class="media-heading">Middle aligned media</h4><span></span></div></div>');
+        result.attr("id", "ad-" + markerIndex);
+        result.find("img").attr("src", ad.imageThumbnail);
+        result.find("h4").html(ad.title);
+        if (ad.price != -1)
+          result.find("span").html(ad.price + "€");
+        result.data("marker-index", markerIndex);
+        result.click(function() {
+          var marker = oldMarkers[$(this).data("marker-index")];
+          map.panTo(marker.getPosition());
+          map.setZoom(13);
+          new google.maps.event.trigger(marker, "click");
+        });
+        $("#results").append(result);
       }
-      console.log(data);
-      //alert(data);
     });
     return false;
   });
@@ -236,7 +222,7 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
         };
         // Add the circle for every point on the map
         pointCircle = new google.maps.Circle(circleOptions);
-        oldRoute.push(pointCircle);
+        mapRoute.push(pointCircle);
         // ansonsten wenn es nur einen punkt gibt einfach den circle anzeigen
         map.fitBounds(pointCircle.getBounds());
         //console.log(point);
