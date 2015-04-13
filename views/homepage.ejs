@@ -25,18 +25,29 @@ body {
 }
 </style>
 
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBlM4TmmBINwcow1cQtcO359u8jX3qTFSo"></script>
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js"></script>
 <script type="text/javascript">
-var directionsDisplay;
-var directionsService = new google.maps.DirectionsService();
-var mapRoute = [], mapMarkers = [];
-var currentPoints = [];
+// google maps object
 var map;
 
+// things needed to find / display routes
+var directionsService = new google.maps.DirectionsService();
+var directionsDisplay;
+// array of route map overlay objects, stored to be able to remove them from the map again
+var mapRoutePoints = [];
+
+// info window of ad markers
+var infoWindow = new google.maps.InfoWindow();
+// array of ad map marker objects, also stored to be able to remove them from the map again
+var mapMarkers = [];
+
+// current route as array of points where to search for ads
+var currentRoute = [];
+
 function clearOldRoute() {
-  for (var i = 0; i < mapRoute.length; i++)
-    mapRoute[i].setMap(null);
-  mapRoute = [];
+  for (var i = 0; i < mapRoutePoints.length; i++)
+    mapRoutePoints[i].setMap(null);
+  mapRoutePoints = [];
   // dirty hack to remove directions from map
   directionsDisplay.setMap(null);
   directionsDisplay = new google.maps.DirectionsRenderer();
@@ -68,110 +79,58 @@ function bindInfoWindow(marker, markerIndex, infoWindow, content) {
   });
 }
 
-function initialize() {
-  directionsDisplay = new google.maps.DirectionsRenderer();
-  var chicago = new google.maps.LatLng(52.4927028, 13.4519156);
-  var mapOptions = {
-    zoom: 11,
-    center: chicago
-  };
-  map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
-  directionsDisplay.setMap(map);
-  
-  $(".button-route").click(function() {
-    $("#input-from").val($(this).data("from"));
-    $("#input-to").val($(this).data("to"));
-    $("#input-radius").val($(this).data("radius"));
-    $("#input-transport").val($(this).data("transport"));
-    $("#submit-route").click();
-    //return false;
-  });
-  
-  $("#submit-route").click(function() {
-    clearOldRoute();
-    calcRoute($("#input-from").val(), $("#input-to").val(), parseInt($("#input-radius").val()) * 1000,
-      $("#input-transport").val(), function(points) {
-        currentPoints = points;
-        // suche updaten wenn route/position verändert wurde
-        $("#submit-search").click();
-    });
-    return false;
-  });
-  
-  $("#submit-search").click(function() {
-    clearOldMarkers();
-    var radius = parseInt($("#input-radius").val()) * 1000;
+function displayAds(ads) {
+  ads.forEach(function(ad) {
+    var markerIndex = mapMarkers.length;
     
-    var requestData = {
-      "query" : $("#input-query").val(),
-      "points" : currentPoints,
-    }
-    io.socket.post("/ebay/ads/", requestData, function(data, jwres) {
-      if (jwres.statusCode !== 200) {
-        alert("WTF?!");
-        return;
-      }
-      
-      var infoWindow = new google.maps.InfoWindow();
-      
-      //Add bids to Map
-      for (var i in data.markers) {
-        var markerIndex = mapMarkers.length;
-        var ad = data.markers[i];
-        
-        var latLng = new google.maps.LatLng(ad.latLng[0], ad.latLng[1]);
-        var marker = new google.maps.Marker({
-          position: latLng,
-          map: map,
-          title: ad.title
-        });
-        mapMarkers.push(marker);
-        
-        var info = "<a href='" + ad.url + "'><h3>" + ad.title + "</h3></a>";
-        if (ad.price != -1) {
-          info += "<h5>" + ad.price + "€</h5>";
-        }
-        if (ad.image != "") {
-          var image = new Image();
-          image.src = ad.image;
-          info += "<p><center><img src='" + ad.image + "' /></center></p>";
-        }
-        info += "<p>" + ad.description + "</p>";
-        bindInfoWindow(marker, markerIndex, infoWindow, info);
-        
-        /*
-        <div class="media">
-          <div class="media-left media-middle">
-            <a href="#">
-              <img class="media-object" src="..." alt="...">
-            </a>
-          </div>
-          <div class="media-body">
-            <h4 class="media-heading">Middle aligned media</h4>
-          </div>
-        </div>
-        */
-        
-        var result = $('<div class="media"><div class="media-left media-top"><img class="media-object" src=""></div><div class="media-body"><h4 class="media-heading">Middle aligned media</h4><span></span></div></div>');
-        result.attr("id", "ad-" + markerIndex);
-        result.find("img").attr("src", ad.imageThumbnail);
-        result.find("h4").html(ad.title);
-        if (ad.price != -1)
-          result.find("span").html(ad.price + "€");
-        result.data("marker-index", markerIndex);
-        result.click(function() {
-          var marker = oldMarkers[$(this).data("marker-index")];
-          map.panTo(marker.getPosition());
-          map.setZoom(13);
-          new google.maps.event.trigger(marker, "click");
-        });
-        $("#results").append(result);
-      }
+    var latLng = new google.maps.LatLng(ad.latLng[0], ad.latLng[1]);
+    var marker = new google.maps.Marker({
+      position: latLng,
+      map: map,
+      title: ad.title
     });
-    return false;
+    mapMarkers.push(marker);
+    
+    var info = "<a href='" + ad.url + "'><h3>" + ad.title + "</h3></a>";
+    if (ad.price != -1) {
+      info += "<h5>" + ad.price + "€</h5>";
+    }
+    if (ad.image != "") {
+      var image = new Image();
+      image.src = ad.image;
+      info += "<p><center><img src='" + ad.image + "' /></center></p>";
+    }
+    info += "<p>" + ad.description + "</p>";
+    bindInfoWindow(marker, markerIndex, infoWindow, info);
+    
+    /*
+    <div class="media">
+      <div class="media-left media-middle">
+        <a href="#">
+          <img class="media-object" src="..." alt="...">
+        </a>
+      </div>
+      <div class="media-body">
+        <h4 class="media-heading">Middle aligned media</h4>
+      </div>
+    </div>
+    */
+    
+    var result = $('<div class="media"><div class="media-left media-top"><img class="media-object" src=""></div><div class="media-body"><h4 class="media-heading">Middle aligned media</h4><span></span></div></div>');
+    result.attr("id", "ad-" + markerIndex);
+    result.find("img").attr("src", ad.imageThumbnail);
+    result.find("h4").html(ad.title);
+    if (ad.price != -1)
+      result.find("span").html(ad.price + "€");
+    result.data("marker-index", markerIndex);
+    result.click(function() {
+      var marker = oldMarkers[$(this).data("marker-index")];
+      map.panTo(marker.getPosition());
+      map.setZoom(13);
+      new google.maps.event.trigger(marker, "click");
+    });
+    $("#results").append(result);
   });
-  
-  $(".button-route").first().click();
 }
 
 function calcRoute(start, end, radius, transport, pointsCallback) {  
@@ -190,7 +149,10 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
     travelMode: travelMode,
   };
   directionsService.route(request, function(response, status) {
-    if (status == google.maps.DirectionsStatus.OK) {
+    if (status != google.maps.DirectionsStatus.OK) {
+      alert("Unable to find a route.");
+      pointsCallback([]);
+    } else {
       // route auf der map setzen falls vorhanden
       if (start != end)
         directionsDisplay.setDirections(response);
@@ -222,7 +184,7 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
         };
         // Add the circle for every point on the map
         pointCircle = new google.maps.Circle(circleOptions);
-        mapRoute.push(pointCircle);
+        mapRoutePoints.push(pointCircle);
         // ansonsten wenn es nur einen punkt gibt einfach den circle anzeigen
         map.fitBounds(pointCircle.getBounds());
         //console.log(point);
@@ -236,6 +198,60 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
       pointsCallback(pointsSearch); //used for giving points to kleinanzeigen API
     }
   });
+}
+
+function initialize() {
+  directionsDisplay = new google.maps.DirectionsRenderer();
+  var chicago = new google.maps.LatLng(52.4927028, 13.4519156);
+  var mapOptions = {
+    zoom: 11,
+    center: chicago
+  };
+  map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+  directionsDisplay.setMap(map);
+  
+  $(".button-route").click(function() {
+    $("#input-from").val($(this).data("from"));
+    $("#input-to").val($(this).data("to"));
+    $("#input-radius").val($(this).data("radius"));
+    $("#input-transport").val($(this).data("transport"));
+    $("#submit-route").click();
+    //return false;
+  });
+  
+  $("#submit-route").click(function() {
+    clearOldRoute();
+    calcRoute($("#input-from").val(), $("#input-to").val(), parseInt($("#input-radius").val()) * 1000,
+      $("#input-transport").val(), function(points) {
+        currentRoute = points;
+        // array of points might be empty if no route was found
+        // update search if a route was found, clear markers if not
+        if (currentRoute != [])
+          $("#submit-search").click();
+        else
+          clearOldMarkers();
+    });
+    return false;
+  });
+  
+  $("#submit-search").click(function() {
+    clearOldMarkers();
+    var radius = parseInt($("#input-radius").val()) * 1000;
+    var requestData = {
+      "query" : $("#input-query").val(),
+      "points" : currentRoute,
+    }
+    io.socket.post("/ebay/ads/", requestData, function(data, jwres) {
+      if (jwres.statusCode !== 200) {
+        alert("WTF?!");
+      } else {
+        displayAds(data.markers);
+      }
+    });
+    return false;
+  });
+  
+  $(".button-route").first().click();
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);
