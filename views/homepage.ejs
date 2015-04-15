@@ -44,6 +44,8 @@ var mapMarkers = [];
 // current route as array of points where to search for ads
 var currentRoute = [];
 
+var currentAdIDs = [];
+
 function clearOldRoute() {
   for (var i = 0; i < mapRoutePoints.length; i++)
     mapRoutePoints[i].setMap(null);
@@ -81,6 +83,11 @@ function bindInfoWindow(marker, markerIndex, infoWindow, content) {
 
 function displayAds(ads) {
   ads.forEach(function(ad) {
+    // ad is already displayed
+    if (currentAdIDs.indexOf(ad.id) != -1)
+      return;
+    currentAdIDs.push(ad.id);
+    
     var markerIndex = mapMarkers.length;
     
     var latLng = new google.maps.LatLng(ad.latLng[0], ad.latLng[1]);
@@ -236,18 +243,32 @@ function initialize() {
   
   $("#submit-search").click(function() {
     clearOldMarkers();
-    var radius = parseInt($("#input-radius").val()) * 1000;
+    
+    var i = 0;
     var requestData = {
       "query" : $("#input-query").val(),
-      "points" : currentRoute,
+      "lat" : currentRoute[0].lat,
+      "lng" : currentRoute[0].lng,
+      "radius" : currentRoute[0].radius / 1000,
     }
-    io.socket.post("/ebay/ads/", requestData, function(data, jwres) {
+    
+    var handler = function(data, jwres) {
       if (jwres.statusCode !== 200) {
         alert("WTF?!");
       } else {
-        displayAds(data.markers);
+        displayAds(data.ads);
+        
+        i++;
+        if (i < currentRoute.length) {
+          requestData.lat = currentRoute[i].lat;
+          requestData.lng = currentRoute[i].lng;
+          requestData.radius = currentRoute[i].radius / 1000;
+          io.socket.post("/ebay/ads", requestData, handler);
+        }
       }
-    });
+    };
+    
+    io.socket.post("/ebay/ads/", requestData, handler);
     return false;
   });
   
