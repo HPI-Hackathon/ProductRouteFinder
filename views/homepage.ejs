@@ -67,7 +67,7 @@ function bindInfoWindow(marker, markerIndex, infoWindow, content) {
   google.maps.event.addListener(marker, "click", function() {
     infoWindow.setContent(content);
     infoWindow.open(map, marker);
-    
+
     // TODO maybe scroll to element right when click marker...
     document.getElementById("ad-" + markerIndex).scrollIntoView(true);
     /*
@@ -82,14 +82,15 @@ function bindInfoWindow(marker, markerIndex, infoWindow, content) {
 }
 
 function displayAds(ads) {
+  ads.sort(function(ad_a, ad_b) { return ad_a.price - ad_b.price; })
   ads.forEach(function(ad) {
     // ad is already displayed
     if (currentAdIDs.indexOf(ad.id) != -1)
       return;
     currentAdIDs.push(ad.id);
-    
+
     var markerIndex = mapMarkers.length;
-    
+
     var latLng = new google.maps.LatLng(ad.latLng[0], ad.latLng[1]);
     var marker = new google.maps.Marker({
       position: latLng,
@@ -97,7 +98,7 @@ function displayAds(ads) {
       title: ad.title
     });
     mapMarkers.push(marker);
-    
+
     var info = "<a href='" + ad.url + "'><h3>" + ad.title + "</h3></a>";
     if (ad.price != -1) {
       info += "<h5>" + ad.price + "€</h5>";
@@ -109,7 +110,7 @@ function displayAds(ads) {
     }
     info += "<p>" + ad.description + "</p>";
     bindInfoWindow(marker, markerIndex, infoWindow, info);
-    
+
     /*
     <div class="media">
       <div class="media-left media-middle">
@@ -122,7 +123,7 @@ function displayAds(ads) {
       </div>
     </div>
     */
-    
+
     var result = $('<div class="media"><div class="media-left media-top"><img class="media-object" src=""></div><div class="media-body"><h4 class="media-heading">Middle aligned media</h4><span></span></div></div>');
     result.attr("id", "ad-" + markerIndex);
     result.find("img").attr("src", ad.imageThumbnail);
@@ -131,7 +132,7 @@ function displayAds(ads) {
       result.find("span").html(ad.price + "€");
     result.data("marker-index", markerIndex);
     result.click(function() {
-      var marker = oldMarkers[$(this).data("marker-index")];
+      var marker = mapMarkers[$(this).data("marker-index")];
       map.panTo(marker.getPosition());
       map.setZoom(13);
       new google.maps.event.trigger(marker, "click");
@@ -140,16 +141,16 @@ function displayAds(ads) {
   });
 }
 
-function calcRoute(start, end, radius, transport, pointsCallback) {  
+function calcRoute(start, end, radius, transport, pointsCallback) {
   // dirty hack
   if (end == "")
     end = start;
-  
+
   var travelMode = google.maps.TravelMode.DRIVING;
   if (transport == "bicycling") travelMode = google.maps.TravelMode.BICYCLING;
   else if (transport == "transit") travelMode = google.maps.TravelMode.TRANSIT;
   else if (transport == "walking") travelMode = google.maps.TravelMode.WALKING;
-  
+
   var request = {
     origin: start,
     destination: end,
@@ -163,14 +164,14 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
       // route auf der map setzen falls vorhanden
       if (start != end)
         directionsDisplay.setDirections(response);
-      
+
       var points = response.routes[0].overview_path;
       var pointsSearch = [];
-      
+
       var lastPoint = null;
       for (var i = 0; i < points.length; i++) {
         var point = points[i];
-                
+
         if (lastPoint != null) {
           var distance = google.maps.geometry.spherical.computeDistanceBetween(point, lastPoint);
           if (distance < 1.5 * radius) {
@@ -178,7 +179,7 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
           }
         }
         lastPoint = point;
-        
+
         var circleOptions = {
           strokeColor: '#FF0000',
           strokeOpacity: 0.8,
@@ -201,7 +202,7 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
           "radius": radius,
         });
       }
-      
+
       pointsCallback(pointsSearch); //used for giving points to kleinanzeigen API
     }
   });
@@ -216,7 +217,7 @@ function initialize() {
   };
   map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
   directionsDisplay.setMap(map);
-  
+
   $(".button-route").click(function() {
     $("#input-from").val($(this).data("from"));
     $("#input-to").val($(this).data("to"));
@@ -225,7 +226,7 @@ function initialize() {
     $("#submit-route").click();
     //return false;
   });
-  
+
   $("#submit-route").click(function() {
     clearOldRoute();
     calcRoute($("#input-from").val(), $("#input-to").val(), parseInt($("#input-radius").val()) * 1000,
@@ -240,10 +241,10 @@ function initialize() {
     });
     return false;
   });
-  
+
   $("#submit-search").click(function() {
     clearOldMarkers();
-    
+
     var i = 0;
     var requestData = {
       "query" : $("#input-query").val(),
@@ -251,13 +252,13 @@ function initialize() {
       "lng" : currentRoute[0].lng,
       "radius" : currentRoute[0].radius / 1000,
     }
-    
+
     var handler = function(data, jwres) {
       if (jwres.statusCode !== 200) {
         alert("WTF?!");
       } else {
         displayAds(data.ads);
-        
+
         i++;
         if (i < currentRoute.length) {
           requestData.lat = currentRoute[i].lat;
@@ -267,11 +268,11 @@ function initialize() {
         }
       }
     };
-    
+
     io.socket.post("/ebay/ads/", requestData, handler);
     return false;
   });
-  
+
   $(".button-route").first().click();
 }
 
@@ -286,7 +287,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
-      </button> 
+      </button>
       <a class="navbar-brand" href="#"><img height=35 src="/images/logo-ebayk-402x802.png" alt=""></a>
     </div>
     <div id="navbar" class="collapse navbar-collapse">
@@ -298,7 +299,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
       <ul class="nav navbar-nav">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">My Places<span class="caret"></span></a>
-          <ul class="dropdown-menu" role="menu">            
+          <ul class="dropdown-menu" role="menu">
             <li><a class="button-route" href="#" data-from="Berlin" data-to="Berlin" data-radius="15" data-transport="driving">Berlin</a></li>
             <li><a class="button-route" href="#" data-from="Potsdam" data-to="Potsdam" data-radius="10" data-transport="driving">Potsdam</a></li>
             <li><a class="button-route" href="#" data-from="Berlin" data-to="Potsdam" data-radius="5" data-transport="driving">Berlin - Potsdam</a></li>
