@@ -81,17 +81,22 @@ function bindInfoWindow(marker, markerIndex, infoWindow, content) {
   });
 }
 
-function displayAds(ads) {
-  ads.sort(function(ad_a, ad_b) { return ad_a.price - ad_b.price; })
+function displayAds(ads, center, radius) {
+  //ads.sort(function(ad_a, ad_b) { return ad_a.price - ad_b.price; })
   ads.forEach(function(ad) {
+    var latLng = new google.maps.LatLng(ad.latLng[0], ad.latLng[1]);
+    // make sure that ad is really contained in that circle, sometimes it's a bit off
+    var distance = google.maps.geometry.spherical.computeDistanceBetween(latLng, center);
+    if (distance > radius)
+      return;
+    
+    // also make sure that ad is only displayed once
     // ad is already displayed
     if (currentAdIDs.indexOf(ad.id) != -1)
       return;
     currentAdIDs.push(ad.id);
 
-    var markerIndex = mapMarkers.length;
-
-    var latLng = new google.maps.LatLng(ad.latLng[0], ad.latLng[1]);
+    var markerIndex = mapMarkers.length;    
     var marker = new google.maps.Marker({
       position: latLng,
       map: map,
@@ -257,13 +262,15 @@ function initialize() {
       if (jwres.statusCode !== 200) {
         alert("WTF?!");
       } else {
-        displayAds(data.ads);
+        var center = new google.maps.LatLng(currentRoute[i].lat, currentRoute[i].lng);
+        var radius = currentRoute[i].radius;
+        displayAds(data.ads, center, radius);
 
         i++;
         if (i < currentRoute.length) {
-          requestData.lat = currentRoute[i].lat;
-          requestData.lng = currentRoute[i].lng;
-          requestData.radius = currentRoute[i].radius / 1000;
+          requestData.lat = center.lat();
+          requestData.lng = center.lng();
+          requestData.radius = radius / 1000;
           io.socket.post("/ebay/ads", requestData, handler);
         }
       }
