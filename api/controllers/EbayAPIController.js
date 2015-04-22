@@ -12,19 +12,9 @@ var AUTH = {
   pass: "dsk38a1l",
 };
 
-module.exports = {
-  test: function(req, res) {
-    request({
-      url: "https://api.ebay-kleinanzeigen.de/api/ads.json",
-      auth: AUTH,
-    }, function(error, response, body) {
-      res.send(body);
-    });
-  },
-  
+module.exports = {  
   ads: function(req, res) {
     var search = req.body;
-    console.log(req.body);
     var url = "https://api.ebay-kleinanzeigen.de/api/ads.json?size=200&latitude=" + search.lat + "&longitude=" + search.lng + "&distance=" + search.radius + "&q=" + search.query;
     console.log("Requesting " + url);
     
@@ -32,7 +22,6 @@ module.exports = {
       url: url,
       auth: AUTH
     }, function(error, response, body) {
-      //console.log(body);
       var data = JSON.parse(body);
       var ads = data["{http://www.ebayclassifiedsgroup.com/schema/ad/v1}ads"].value.ad;
       
@@ -51,7 +40,6 @@ module.exports = {
         for (var j in ad.pictures.picture) {
           for (var k in ad.pictures.picture[j].link) {
             var img = ad.pictures.picture[j].link[k];
-            //console.log(img);
             if (img.rel == "large")
               image = img.href;
             if (img.rel == "teaser")
@@ -78,7 +66,6 @@ module.exports = {
           imageThumbnail: imageThumbnail,
         };
         results.push(marker);
-        //console.log(marker);
       }
       
       res.send({"ads" : results});

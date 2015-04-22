@@ -32,7 +32,6 @@ module.exports.routes = {
   *                                                                          *
   ***************************************************************************/
 
-  'GET /ebay/test': 'EbayAPIController.test',
   'POST /ebay/ads': 'EbayAPIController.ads',
 
   '/': {
