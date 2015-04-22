@@ -46,6 +46,10 @@ var currentRoute = [];
 
 var currentAdIDs = [];
 
+// index of current search, incremented every time something is searched
+// we use this to stop the current loading along a route if something new is searched
+var currentSearch = 42;
+
 function clearOldRoute() {
   for (var i = 0; i < mapRoutePoints.length; i++)
     mapRoutePoints[i].setMap(null);
@@ -60,6 +64,7 @@ function clearOldMarkers() {
   for (var i = 0; i < mapMarkers.length; i++)
     mapMarkers[i].setMap(null);
   mapMarkers = [];
+  currentAdIDs = [];
   $("#results").empty();
 }
 
@@ -258,7 +263,15 @@ function initialize() {
       "radius" : currentRoute[0].radius / 1000,
     }
 
+    // increment search index, save own search index
+    currentSearch++;
+    var search = currentSearch;
     var handler = function(data, jwres) {
+      // if a new search was started in the meanwhile
+      // ignore the received ads and also don't load ads in the other circles
+      if (search != currentSearch)
+        return;
+      
       if (jwres.statusCode !== 200) {
         alert("WTF?!");
       } else {
@@ -267,10 +280,10 @@ function initialize() {
         displayAds(data.ads, center, radius);
 
         i++;
-        if (i < currentRoute.length) {
-          requestData.lat = center.lat();
-          requestData.lng = center.lng();
-          requestData.radius = radius / 1000;
+        if (i < currentRoute.length) {          
+          requestData.lat = currentRoute[i].lat;
+          requestData.lng = currentRoute[i].lng;
+          requestData.radius = currentRoute[i].radius / 1000;
           io.socket.post("/ebay/ads", requestData, handler);
         }
       }
