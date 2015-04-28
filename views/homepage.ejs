@@ -168,7 +168,7 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
       alert("Unable to find a route.");
       pointsCallback([]);
     } else {
-      // route auf der map setzen falls vorhanden
+      // display route if it is necessary
       if (start != end)
         directionsDisplay.setDirections(response);
 
@@ -176,17 +176,17 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
       var pointsSearch = [];
 
       var lastPoint = null;
-      for (var i = 0; i < points.length; i++) {
-        var point = points[i];
-
+      points.forEach(function(point) {
+        // skip as many overlapping circles as possible
         if (lastPoint != null) {
           var distance = google.maps.geometry.spherical.computeDistanceBetween(point, lastPoint);
           if (distance < 1.5 * radius) {
-            continue;
+            return;
           }
         }
         lastPoint = point;
 
+        // display circle on the map
         var circleOptions = {
           strokeColor: '#FF0000',
           strokeOpacity: 0.8,
@@ -197,20 +197,20 @@ function calcRoute(start, end, radius, transport, pointsCallback) {
           center: point,
           radius: radius,
         };
-        // Add the circle for every point on the map
         pointCircle = new google.maps.Circle(circleOptions);
         mapRoutePoints.push(pointCircle);
-        // ansonsten wenn es nur einen punkt gibt einfach den circle anzeigen
-        map.fitBounds(pointCircle.getBounds());
-        //console.log(point);
+        // if there is only one circle, center view to that one
+        if (start == end)
+          map.fitBounds(pointCircle.getBounds());
         pointsSearch.push({
           "lat": point.lat(),
           "lng": point.lng(),
           "radius": radius,
         });
-      }
+      });
 
-      pointsCallback(pointsSearch); //used for giving points to kleinanzeigen API
+      // "return" calculated circles to callback
+      pointsCallback(pointsSearch);
     }
   });
 }

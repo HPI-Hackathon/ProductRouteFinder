@@ -18,6 +18,7 @@ module.exports = {
     var url = "https://api.ebay-kleinanzeigen.de/api/ads.json?size=200&latitude=" + search.lat + "&longitude=" + search.lng + "&distance=" + search.radius + "&q=" + search.query;
     console.log("Requesting " + url);
     
+    // request ads from ebay kleinanzeigen api
     request({
       url: url,
       auth: AUTH
@@ -25,10 +26,16 @@ module.exports = {
       var data = JSON.parse(body);
       var ads = data["{http://www.ebayclassifiedsgroup.com/schema/ad/v1}ads"].value.ad;
       
+      // to lazy to fix: sometimes this happens
+      if (ads === undefined) {
+        res.send({"ads" : []});
+        return
+      }
+      
+      // iterate through ads from api and extract necessary data
+      // like description, price, image...
       var results = [];
-      for (var i in ads) {
-        var ad = ads[i];
-        
+      ads.forEach(function(ad) {
         var url = "";
         for (var j in ad.link) {
           var link = ad.link[j];
@@ -66,8 +73,9 @@ module.exports = {
           imageThumbnail: imageThumbnail,
         };
         results.push(marker);
-      }
+      });
       
+      // return available ads to client
       res.send({"ads" : results});
       
       /*
